@@ -16,6 +16,7 @@ __all__ = (
 import logging
 logger = logging.getLogger(__name__)
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -32,30 +33,32 @@ from fobi.base import (
 # ****************************************************************************
 # **************** Safe User import for Django > 1.5, < 1.8 ******************
 # ****************************************************************************
-try:
-    # Django 1.7 check
-    from django.apps import AppConfig
-    from django.conf import settings
-    User = settings.AUTH_USER_MODEL
-except ImportError:
-    # Django 1.6 check
-    try:
-        from django.contrib.auth import get_user_model
-    # Fall back to Django 1.5
-    except ImportError:
-        from django.contrib.auth.models import User
-    else:
-        User = get_user_model()
+# try:
+#     # Django 1.7 check
+#     from django.apps import AppConfig
+#     from django.conf import settings
+#     User = settings.AUTH_USER_MODEL
+# except ImportError:
+#     # Django 1.6 check
+#     try:
+#         from django.contrib.auth import get_user_model
+#     # Fall back to Django 1.5
+#     except ImportError:
+#         from django.contrib.auth.models import User
+#     else:
+#         User = get_user_model()
+#
+#     # Sanity checks
+#     user = User()
+#
+#     if not hasattr(user, 'username'):
+#         from fobi.exceptions import ImproperlyConfigured
+#         raise ImproperlyConfigured("Your custom user model ({0}.{1}) doesn't "
+#                                    "have ``username`` property, while "
+#                                    "``django-fobi`` relies on its' presence"
+#                                    ".".format(user._meta.app_label, user._meta.object_name))
 
-    # Sanity checks
-    user = User()
-
-    if not hasattr(user, 'username'):
-        from fobi.exceptions import ImproperlyConfigured
-        raise ImproperlyConfigured("Your custom user model ({0}.{1}) doesn't "
-                                   "have ``username`` property, while "
-                                   "``django-fobi`` relies on its' presence"
-                                   ".".format(user._meta.app_label, user._meta.object_name))
+user_model_label = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
 # ****************************************************************************
 # ****************************************************************************
@@ -82,7 +85,7 @@ class AbstractPluginModel(models.Model):
           user groups allowed to use the plugin.
     """
     #plugin_uid = models.CharField(_("Plugin UID"), max_length=255, unique=True, editable=False)
-    users = models.ManyToManyField(User, verbose_name=_("User"), null=True, \
+    users = models.ManyToManyField(user_model_label, verbose_name=_("User"), null=True, \
                                    blank=True)
     groups = models.ManyToManyField(Group, verbose_name=_("Group"), null=True, \
                                     blank=True)
@@ -220,7 +223,7 @@ class FormHandler(AbstractPluginModel):
 class FormWizardEntry(models.Model):
     """
     """
-    user = models.ForeignKey(User, verbose_name=_("User"))
+    user = models.ForeignKey(user_model_label, verbose_name=_("User"))
     name = models.CharField(_("Name"), max_length=255)
     slug = AutoSlugField(populate_from='name', verbose_name=_("Slug"), \
                          unique=True)
@@ -268,7 +271,7 @@ class FormEntry(models.Model):
     form_wizard_entry = models.ForeignKey(
         FormWizardEntry, verbose_name=_("Form wizard"), null=True, blank=True
         )
-    user = models.ForeignKey(User, verbose_name=_("User"))
+    user = models.ForeignKey(user_model_label, verbose_name=_("User"))
     name = models.CharField(_("Name"), max_length=255)
     slug = AutoSlugField(
         populate_from='name', verbose_name=_("Slug"), unique=True
