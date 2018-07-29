@@ -85,9 +85,9 @@ class AbstractPluginModel(models.Model):
           user groups allowed to use the plugin.
     """
     #plugin_uid = models.CharField(_("Plugin UID"), max_length=255, unique=True, editable=False)
-    users = models.ManyToManyField(user_model_label, verbose_name=_("User"), null=True, \
+    users = models.ManyToManyField(user_model_label, verbose_name=_("User"), \
                                    blank=True)
-    groups = models.ManyToManyField(Group, verbose_name=_("Group"), null=True, \
+    groups = models.ManyToManyField(Group, verbose_name=_("Group"), \
                                     blank=True)
 
     class Meta:
