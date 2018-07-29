@@ -45,7 +45,7 @@ from six import with_metaclass
 
 from django import forms
 from django.forms import ModelForm
-from django.forms.util import ErrorList
+from django.forms.utils import ErrorList
 from django.http import Http404
 from django.utils.translation import ugettext_lazy as _
 
